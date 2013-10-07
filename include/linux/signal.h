@@ -287,7 +287,6 @@ struct ksignal {
 
 extern int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka);
 extern void signal_setup_done(int failed, struct ksignal *ksig, int stepping);
-extern void signal_delivered(int sig, siginfo_t *info, struct k_sigaction *ka, struct pt_regs *regs, int stepping);
 extern void exit_signals(struct task_struct *tsk);
 
 /*
