@@ -56,7 +56,7 @@ union thread_union cpu0_irqstack
 unsigned long thread_saved_pc(struct task_struct *task)
 {
 	/* FIXME: Need to look up userspace_pid by cpu */
-	return os_process_pc(userspace_pid[0]);
+	return os_process_pc(userspace_pid[current_thread_info()->cpu]);
 }
 
 /* Changed in setup_arch, which is called in early boot */

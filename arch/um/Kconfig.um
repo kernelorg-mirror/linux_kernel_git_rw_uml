@@ -98,7 +98,6 @@ config MAGIC_SYSRQ
 config SMP
 	bool "Symmetric multi-processing support"
 	default n
-	depends on BROKEN
 	help
 	  This option enables UML SMP support.
 	  It is NOT related to having a real SMP box. Not directly, at least.

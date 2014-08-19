@@ -241,10 +241,7 @@ static int userspace_tramp(void *stack)
 	return 0;
 }
 
-/* Each element set once, and only accessed by a single processor anyway */
-#undef NR_CPUS
-#define NR_CPUS 1
-int userspace_pid[NR_CPUS];
+int userspace_pid[32];
 
 int start_userspace(unsigned long stub_stack)
 {
@@ -313,14 +310,18 @@ int start_userspace(unsigned long stub_stack)
 	return err;
 }
 
+extern int get_current_hostpid(void);
+
 void userspace(struct uml_pt_regs *regs)
 {
 	struct itimerval timer;
 	unsigned long long nsecs, now;
-	int err, status, op, pid = userspace_pid[0];
+	int err, status, op, pid;
 	/* To prevent races if using_sysemu changes under us.*/
 	int local_using_sysemu;
 	siginfo_t si;
+
+	pid = get_current_hostpid();
 
 	/* Handle any immediate reschedules or signals */
 	interrupt_end();
@@ -428,8 +429,9 @@ void userspace(struct uml_pt_regs *regs)
 				       "with signal %d\n", sig);
 				fatal_sigsegv();
 			}
-			pid = userspace_pid[0];
 			interrupt_end();
+			/* The pid may have changed because of an execve() */
+			pid = get_current_hostpid();
 
 			/* Avoid -ERESTARTSYS handling in host */
 			if (PT_SYSCALL_NR_OFFSET != PT_SYSCALL_RET_OFFSET)
@@ -638,7 +640,7 @@ void reboot_skas(void)
 	UML_LONGJMP(&initial_jmpbuf, INIT_JMP_REBOOT);
 }
 
-void __switch_mm(struct mm_id *mm_idp)
+void __switch_mm(int cpu, struct mm_id *mm_idp)
 {
-	userspace_pid[0] = mm_idp->u.pid;
+	userspace_pid[cpu] = mm_idp->u.pid;
 }

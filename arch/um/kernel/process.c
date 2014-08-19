@@ -35,10 +35,10 @@
  */
 struct cpu_task cpu_tasks[NR_CPUS] = { [0 ... NR_CPUS - 1] = { -1, NULL } };
 
+//TOOD: merge into set_current
 static inline int external_pid(void)
 {
-	/* FIXME: Need to look up userspace_pid by cpu */
-	return userspace_pid[0];
+	return userspace_pid[current_thread_info()->cpu];
 }
 
 int pid_to_processor_id(int pid)
@@ -414,3 +414,7 @@ int elf_core_copy_fpregs(struct task_struct *t, elf_fpregset_t *fpu)
 	return save_fp_registers(userspace_pid[cpu], (unsigned long *) fpu);
 }
 
+int get_current_hostpid(void)
+{
+	return userspace_pid[raw_smp_processor_id()];
+}

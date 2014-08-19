@@ -46,7 +46,7 @@ void smp_send_stop(void)
 
 	printk(KERN_INFO "Stopping all CPUs...");
 	for (i = 0; i < num_online_cpus(); i++) {
-		if (i == current_thread->cpu)
+		if (i == raw_smp_processor_id())
 			continue;
 		os_write_file(cpu_data[i].ipi_pipe[1], "S", 1);
 	}
@@ -55,6 +55,8 @@ void smp_send_stop(void)
 
 static cpumask_t smp_commenced_mask = CPU_MASK_NONE;
 static cpumask_t cpu_callin_map = CPU_MASK_NONE;
+
+#if 0
 
 static int idle_proc(void *cpup)
 {
@@ -81,10 +83,12 @@ static int idle_proc(void *cpup)
 	return 0;
 }
 
+#endif
+
 static struct task_struct *idle_thread(int cpu)
 {
 	struct task_struct *new_task;
-
+#if 0
 	current->thread.request.u.thread.proc = idle_proc;
 	current->thread.request.u.thread.arg = (void *) cpu;
 	new_task = fork_idle(cpu);
@@ -96,6 +100,7 @@ static struct task_struct *idle_thread(int cpu)
 		          { .pid = 	new_task->thread.mode.tt.extern_pid,
 			    .task = 	new_task } );
 	idle_threads[cpu] = new_task;
+#endif
 	panic("skas mode doesn't support SMP");
 	return new_task;
 }
@@ -130,8 +135,10 @@ void smp_prepare_cpus(unsigned int maxcpus)
 		while (waittime-- && !cpu_isset(cpu, cpu_callin_map))
 			cpu_relax();
 
+#if 0
 		printk(KERN_INFO "%s\n",
 		       cpu_isset(cpu, cpu_calling_map) ? "done" : "failed");
+#endif
 	}
 }
 
